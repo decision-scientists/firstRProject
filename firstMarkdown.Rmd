@@ -1,0 +1,43 @@
+---
+title: "SCEM Assignment 2"
+author: "Noah Sheldon"
+date: "03/10/2020"
+output: html_document
+---
+
+
+## Wave Plot
+
+```{r pressure, echo=TRUE}
+x <- seq(0,20,0.01)
+y <- sin(x)
+sin_df <- data.frame(x,y)
+plot(x,y)
+```
+
+## Replicability and reproducibility
+
+Replicability : Performing the experiment again and collecting new data.
+
+Reproducibility : Performing the experiment with same code but with a different analyst.
+
+Replicability is stronger.When we perform the experiment on new data and arrive at the same conclusions, this helps us make decisions with higher confidence.   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
