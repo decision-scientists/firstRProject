@@ -26,7 +26,7 @@ head(hawksSmall)
 #3. Too much information in 1 chart
 
 
-plot <- ggplot(data = hawksSmall, aes(x=Weight))+xlab("Weight") + geom_histogram(binwidth = 10) + ylab("Count")
+plot <- ggplot(data = hawksSmall, aes(x=Weight))+xlab("Weight") + geom_histogram(binwidth = 100) + ylab("Count")
 plot
 
 # Aesthetic 
@@ -58,7 +58,7 @@ plot
 # Shape - Species
 # Glyph - points 
 
-ggplot(data = hawksSmall,aes(x = Tail,y = Weight ,color = Species ))    + geom_point()  + xlab("Tail(mm)") + ylab("Weight(gm)") + geom_smooth(method = "lm") +facet_wrap(~Species)
+ggplot(data = hawksSmall,aes(x = Tail,y = Weight ,color = Species ))    + geom_point()  + xlab("Tail(mm)") + ylab("Weight(gm)") + geom_smooth(method = "lm") +facet_wrap(~Species, scales = "free")
 
 
 
