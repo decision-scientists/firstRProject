@@ -158,3 +158,14 @@ max_cor_var<-function(df,col_name){ # function to determine the variable with ma
 
 
 
+
+
+
+
+
+
+
+
+
+
+
