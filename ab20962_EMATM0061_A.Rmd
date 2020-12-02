@@ -1,0 +1,203 @@
+---
+title: "ab20962_EMATM0061_A"
+author: "Noah Sheldon"
+date: "19/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Section A: Data Wrangling
+
+The dataset used for data wrangling task is hydrographic data from the California Cooperative Oceanic Fisheries Investigations (CalCOFI). 
+Data can be accessed by clicking [here](https://www.calcofi.org/ccdata.html).
+
+### Importing Required Libraries
+
+```{r message= FALSE, warning=FALSE}
+#load the library
+library(tidyverse)
+```
+Tidyverse is a collection of packages created for data science. Few examples of the packages are ggplot2, dplyr, tidyr..etc. These packages are used to do analysis. 
+
+Loading a library helps us to use the inbuilt functions in the library with ease. 
+
+### Question 1 - Load the dataset
+
+```{r}
+#load the dataset
+calcofi_data_original <- read.csv("194903-201911_Bottle.csv")
+
+#Check the dimensions of the dataset
+dim(calcofi_data_original)
+```
+The calcofi dataset is loaded into the environment using "read.csv" command. This dataset has been assigned the variable name "calcofi_data_original". 
+
+The "calcofi_data_original" has 887018 rows and 62 columns. The "dim" command helps us to see the dimensions of the dataframe. 
+
+### Question 2 - Generate a new data frame called “calcofi_data” 
+
+Out of the 62 columns we are going to work on just 6 columns from the dataset. We will take a subset from "calcofi_data_original" data and name it "calcofi_data". 
+
+Subsetting the data helps us in the following ways:  
+1. We work with the rows, colunmns only required.   
+2. Saves memory.  
+3. Increases performance.  
+4. Makes debugging easier.  
+
+The 6 columns are the following. Each column name is follwed by a description of the it:  
+1.Depth_ID - Unique Identifier for a particalur depth.  
+2.Depthm - Depth of Water in meters.  
+3.T_degC - Temperature of Water measured in degrees centigrade.  
+4.Salnty - Salanity of Water.  
+5.Oxy_µmol.Kg - Oxygen level in micro moles per kilogram.  
+6.ChlorA - Acetone extracted chlorophyll-a measured fluorometrically.  
+
+
+The full data dictionary can accessed by clicking [here](https://new.data.calcofi.org/index.php/database/calcofi-database/bottle-field-descriptions)
+
+We are also renaming the colunms to column names which are easy,understood and readable. 
+
+The new column names are as follows:  
+1.depth - Depthm  
+2.temperature - T_degC  
+3.salinity - Salnty  
+4.oxygen - Oxy_µmol.Kg  
+5.chlorophyll ChlorA  
+
+
+```{r}
+# selecting 6 columns from the calcofi original dataset and renaming 5 columns
+calcofi_data <- calcofi_data_original %>%
+  select(Depth_ID,Depthm,T_degC,Salnty,'Oxy_µmol.Kg',ChlorA) %>%
+  rename(depth = Depthm, temperature = T_degC,salinity = Salnty, oxygen = 'Oxy_µmol.Kg', chlorophyll = ChlorA)
+
+#The first five rows of calcofi_data
+head(calcofi_data)
+
+```
+
+### Question 3 - Writing two R functions: One called “get_year” and one called “get_cast_type”
+
+The function called “get_year” takes elements from the “Depth_ID” column and outputs the year number. 
+
+For example, given a string of the form “19-4903CR-HY-060-0930-05400560-0000A-3”, the “get_year” function should output the number 1949.
+
+```{r}
+#Function: get_year 
+#Input: Depth_ID 
+#Output: Year the reading was recorded
+get_year <- function(Depth_ID){
+  return(paste(substr(Depth_ID,1,2),substr(Depth_ID,4,5),sep =""))
+}
+```
+The function “get_cast_type” takes elements from the “Depth_ID” column and outputs the cast type. 
+
+For example, given a string of the form “19-4903CR-HY-060-0930-05400560-0000A-3”, the “get_cast_type” function should output the character string “HY”.
+
+```{r}
+#Function: get_cast_type 
+#Input: Depth_ID 
+#Output: Cast type
+get_cast_type <- function(Depth_ID){
+  return(substr(Depth_ID,11,12))
+}
+```
+
+```{r}
+#Appplying fucntion get_year to extract year column and get_cast_type to get the cast_type column
+#Also dropping the depth_id column
+calcofi_data <- calcofi_data %>%
+  mutate(year = get_year(Depth_ID),
+         cast_type = get_cast_type(Depth_ID),
+  ) %>%
+  select(-Depth_ID)
+
+#Displaying first 5 rows of calcofi_data
+head(calcofi_data)
+  
+```
+#### Which of these variables is categorical?  
+The column cast_type is the only categorical variable with unique values
+
+```{r}
+unique(calcofi_data$cast_type)
+```
+
+### Question 4 - Adding decade column
+
+Creating a new column "decade". We will extract the decade column from the year column. 
+
+For example, 1959 will be mapped to 1950 and 2002 will be to 2000.
+
+The logic used is to subtract year modulus 10 column from year column.   
+
+For example, the year passed in is 1959.  
+The formula is, decade = year - (year %% 10)  
+This gives us, decade = 1959 -  (1959 %% 10)  
+decade = 1959 - 9  
+decade = 1950  
+
+```{r}
+#Creating a new column "decade" from the year column
+calcofi_data$decade <- as.numeric(calcofi_data$year) - (as.numeric(calcofi_data$year) %% 10)
+
+#Filtering the data to only rows with depth 100m and decade between 1950 and 2000.
+
+calcofi_data <- calcofi_data %>%
+      filter(depth == 100, 
+             between(decade,1950,2000))
+
+#Shape(dimension) of calcofi_data
+dim(calcofi_data)
+
+```
+The dataframe has 26622 rows.
+
+### Question 5 - Summary DataFrame
+
+Summary dataframe with the sample mean, median and standard deviation of temperature, oxygen and salanity grouped by decade. 
+
+```{r message= FALSE, warning=FALSE}
+#
+summary_calcofi <- calcofi_data %>%
+  select(temperature, oxygen, salinity, decade) %>%
+  group_by(decade) %>%
+  summarise(across(everything(),
+                   list(mn = ~mean(.x,na.rm = T),
+                        md = ~median(.x,na.rm = T),
+                        sd = ~sd(.x,na.rm = T)))) 
+```
+
+The function shorten_colnames is a function that takes a column name as argument and returns a shortened column name.
+
+The logic begind this function is that it takes in a string as an argument and outputs concatenated values of the first three characters and the last three characters of the string.
+
+For example, if we pass the column name was temperature_mn. The output of the function will be tem_mn. This tem_mn will be our new column name. 
+
+```{r}
+#Function: shorten_colnames 
+#Input: col_name 
+#Output: shortened col_name
+shorten_colnames <- function(col_name){
+  return(paste(substr(col_name,1,3),substr(col_name,nchar(col_name)-2,nchar(col_name)), sep = ""))
+}
+
+#Applying new shortened col_names to our dataset "summary_calcofi"
+names(summary_calcofi)[-1] <- sapply(names(summary_calcofi)[-1], shorten_colnames)
+
+#Printing out the first five rows of the dataset
+head(summary_calcofi)
+```
+
+
+
+
+
+
+
+
+
+

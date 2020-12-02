@@ -1,0 +1,68 @@
+---
+title: "ab20962_EMATM0061_B"
+author: "Noah Sheldon"
+date: "26/11/2020"
+output: html_document
+---
+
+# Hypothesis Test
+
+```{r message= FALSE, warning=FALSE}
+#loading reqiured libraries
+library(tidyverse)
+library(ggpubr)
+```
+
+
+```{r}
+df_2015 = read.csv("E:\\MScDS\\Assignments\\SCEM\\coursework\\ab20962_EMATM0061_B_dir\\2015.csv") 
+
+df_2015 <- df_2015 %>%
+  select(Country,Happiness.Score) %>%
+  rename(Score_2015 = Happiness.Score)
+
+df_2019 = read.csv("E:\\MScDS\\Assignments\\SCEM\\coursework\\ab20962_EMATM0061_B_dir\\2019.csv") 
+
+df_2019 <- df_2019 %>% 
+  select(Country.or.region,Score) %>%
+  rename(Country = Country.or.region, Score_2019 =Score)
+
+head(df_2015)
+head(df_2019)
+
+final_df <- inner_join(df_2015,df_2019)
+
+final_df$diff <- final_df$Score_2019 -final_df$Score_2015
+
+head(final_df)     
+                
+```
+
+```{r}
+#cumulative density function
+ggdensity(final_df$diff, 
+          main = "Density plot of diffs",
+          xlab = "Diffs")
+
+#qqplot 
+ggqqplot(final_df$diff)
+```
+
+
+```{r}
+t.test(final_df$Score_2015, final_df$Score_2019, paired = TRUE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
